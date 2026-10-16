@@ -178,20 +178,20 @@
 </div>
 
 <script>
-  var status = document.getElementById('status');
+  var hiMsg = document.getElementById('status');
   var n = 0;
   document.getElementById('hello').addEventListener('click', function () {
     n += 1;
-    status.textContent = n === 1 ? '반갑습니다!' : '인사를 ' + n + '번 받았어요.';
+    hiMsg.textContent = n === 1 ? '반갑습니다!' : '인사를 ' + n + '번 받았어요.';
   });
   document.getElementById('copy').addEventListener('click', function () {
     var text = document.getElementById('mail').textContent;
-    var done = function () { status.textContent = '이메일 주소를 복사했어요.'; };
+    var done = function () { hiMsg.textContent = '이메일 주소를 복사했어요.'; };
     var fallback = function () {
       var r = document.createRange();
       r.selectNodeContents(document.getElementById('mail'));
       var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
-      status.textContent = '주소를 선택했어요. Ctrl+C로 복사하세요.';
+      hiMsg.textContent = '주소를 선택했어요. Ctrl+C로 복사하세요.';
     };
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(text).then(done, fallback);
