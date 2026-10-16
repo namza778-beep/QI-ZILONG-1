@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나의 간단한 사이트</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>안녕하세요 👋</h1>
+    <p>간단한 소개 페이지입니다.</p>
+    <nav>
+      <a href="#about">소개</a>
+      <a href="#features">특징</a>
+      <a href="#contact">연락처</a>
+    </nav>
+  </header>
+
+  <main>
+    <section id="about">
+      <h2>소개</h2>
+      <p>이곳은 HTML과 CSS만으로 만든 가벼운 웹사이트입니다. 원하는 내용으로 자유롭게 수정해 보세요.</p>
+    </section>
+
+    <section id="features">
+      <h2>특징</h2>
+      <div class="cards">
+        <div class="card"><h3>⚡ 빠름</h3><p>별도 설치 없이 바로 열립니다.</p></div>
+        <div class="card"><h3>📱 반응형</h3><p>모바일에서도 보기 좋습니다.</p></div>
+        <div class="card"><h3>🎨 간단</h3><p>수정하기 쉬운 구조입니다.</p></div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <h2>연락처</h2>
+      <p>namza778@gmail.com</p>
+      <button id="btn">클릭해 보세요</button>
+      <p id="msg"></p>
+    </section>
+  </main>
+
+  <footer>© 2026 My Site</footer>
+
+  <script>
+    let count = 0;
+    document.getElementById('btn').addEventListener('click', () => {
+      count++;
+      document.getElementById('msg').textContent = `${count}번 클릭했어요!`;
+    });
+  </script>
+</body>
+</html>
