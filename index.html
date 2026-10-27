@@ -198,62 +198,59 @@
     } else { fallback(); }
   });
 
-  // 방명록: shared db collection "guestbook"
+  // 방명록: Supabase 테이블 "guestbook" (공개용 키만 사용)
   (function () {
+    var API = 'https://ogkhkolgxibjwgztfudb.supabase.co/rest/v1/guestbook';
+    var KEY = 'sb_publishable_EAnN2MEwBWYQXAmSlX2uyw_KZGbV4iJ';
+    var H = { apikey: KEY, Authorization: 'Bearer ' + KEY };
     var form = document.getElementById('sign');
     var list = document.getElementById('entries');
     var empty = document.getElementById('empty');
     var gstatus = document.getElementById('gstatus');
     var sendBtn = document.getElementById('gsend');
-    var col = null;
 
     function fmt(ts) {
-      try {
-        var d = new Date(ts);
-        return d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
-      } catch (e) { return ''; }
+      var d = new Date(ts);
+      return d.getFullYear() + '.' + (d.getMonth() + 1) + '.' + d.getDate();
     }
-    function render(snap) {
+    function render(rows) {
       list.textContent = '';
-      snap.docs.forEach(function (doc) {
-        var v = doc.data() || {};
+      rows.forEach(function (v) {
         var li = document.createElement('li');
         var who = document.createElement('span'); who.className = 'who'; who.textContent = v.name || '익명';
-        var when = document.createElement('span'); when.className = 'when'; when.textContent = v.at ? fmt(v.at) : '';
+        var when = document.createElement('span'); when.className = 'when'; when.textContent = v.created_at ? fmt(v.created_at) : '';
         var head = document.createElement('div'); head.appendChild(who); head.appendChild(when);
         var what = document.createElement('div'); what.className = 'what'; what.textContent = v.message || '';
         li.appendChild(head); li.appendChild(what);
         list.appendChild(li);
       });
-      empty.hidden = snap.size > 0;
+      empty.hidden = rows.length > 0;
     }
-
-    if (!window.claude || !window.claude.use) {
-      form.hidden = true; empty.textContent = '방명록을 불러올 수 없는 환경입니다.';
-      return;
+    function load() {
+      return fetch(API + '?select=name,message,created_at&order=created_at.desc&limit=100', { headers: H })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(render)
+        .catch(function () { gstatus.textContent = '방명록을 불러오지 못했어요.'; });
     }
-    window.claude.use('db').then(function (db) {
-      if (!db) { form.hidden = true; empty.textContent = '방명록은 로그인 후 볼 수 있어요.'; return; }
-      col = db.collection('guestbook');
-      col.orderBy('at', 'desc').limit(100).onSnapshot(render, function () {
-        gstatus.textContent = '방명록을 불러오지 못했어요.';
-      });
-    });
+    load();
 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      if (!col) { gstatus.textContent = '아직 연결 중이에요. 잠시 후 다시 시도해 주세요.'; return; }
       var name = document.getElementById('gname').value.trim();
       var msg = document.getElementById('gmsg').value.trim();
       if (!name || !msg) return;
       sendBtn.disabled = true;
-      col.add({ name: name, message: msg, at: Date.now() }).then(function () {
+      fetch(API, {
+        method: 'POST',
+        headers: Object.assign({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }, H),
+        body: JSON.stringify({ name: name, message: msg })
+      }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
         document.getElementById('gmsg').value = '';
         gstatus.textContent = '서명해 주셔서 감사합니다!';
-      }, function (err) {
-        gstatus.textContent = (err && err.code === 'invalid_argument')
-          ? '이 링크로는 서명할 수 없어요. 편집 권한이 필요합니다.'
-          : '저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
+        return load();
+      }).catch(function () {
+        gstatus.textContent = '저장하지 못했어요. 잠시 후 다시 시도해 주세요.';
       }).then(function () { sendBtn.disabled = false; });
     });
   })();
