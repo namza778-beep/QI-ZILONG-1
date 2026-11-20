@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title> 로또6/45분석기</title>
+</head>
+<body>
+<h1>로또6/45분석기</h1>
+<p>과거 당첨번호를 분석하고 새로운 번호를 생성합니다.</p>
+<button id="generateBtn">로또 번호 생성하기</button>
+
+<div id="result"></div>
+<h2>전체 회차 통계 분석</h2>
+<button id="analyzeBtn">전체 회차 분석하기</button>
+<div id="analysis"></div>
+<script>
+document.getElementById("generateBtn").onclick = function() {
+    let numbers = [];
+
+    while (numbers.length < 6) {
+        let num = Math.floor(Math.random() * 45) + 1;
+
+        if (!numbers.includes(num)) {
+            numbers.push(num);
+        }
+    }
+
+    numbers.sort((a, b) => a - b);
+
+    document.getElementById("result").innerText =
+        numbers.join(" , ");
+};
+document.getElementById("analyzeBtn").onclick = function() {
+    let counts = Array(46).fill(0);
+
+    lottoHistory.forEach(function(draw) {
+        draw.forEach(function(num) {
+            counts[num]++;
+        });
+    });
+
+    let result = "<h3>번호별 출현 횟수</h3>";
+    let recent50 = lottoHistory.slice(-50);
+    let recentCounts = Array(46).fill(0);
+    recent50.forEach(numbers => {
+    numbers.forEach(num => recentCounts[num]++);
+});
+    let sortedNumbers = [];
+
+for (let i = 1; i <= 45; i++) {
+    sortedNumbers.push({
+        number: i,
+        count: counts[i]
+    });
+}
+
+sortedNumbers.sort(function(a, b) {
+    return b.count - a.count;
+});
+
+result += "<h3>가장 많이 나온 번호 TOP 10</h3>";
+
+
+let leastNumbers = [...sortedNumbers];
+
+leastNumbers.sort(function(a, b) {
+    return a.count - b.count;
+});
+
+
+
+for(let i = 0; i < 10; i++) {
+    result += sortedNumbers[i].number + "번 : " +
+              sortedNumbers[i].count + "회<br>";
+
+}
+
+    
+    result += "<h3>가장 적게 나온 번호 TOP 10</h3>";
+for (let i = 0; i < 10; i++) {
+    result += leastNumbers[i].number + "번 : " +
+              leastNumbers[i].count + "회<br>";
+}
+result += "<h3>최근 50회 번호별 출현 횟수</h3>";
+for (let i = 1; i <= 45; i++) {
+    result += i + "번 : " + recentCounts[i] + "회<br>";
+}
+for (let set = 1; set <= 5; set++) {
+let recommendedNumbers = [];
+let rankedNumbers = Array.from({length: 45}, (_, i) => i + 1).sort((a, b) => recentCounts[b] - recentCounts[a]);
+recommendedNumbers.push(...rankedNumbers.slice(0, 10).sort(() => Math.random() - 0.5).slice(0, 2));
+recommendedNumbers.push(rankedNumbers[35 + Math.floor(Math.random() * 10)]);
+recommendedNumbers.push(sortedNumbers.find(item => !recommendedNumbers.includes(item.number)).number);
+while (recommendedNumbers.length < 6) {
+        let num = Math.floor(Math.random() * 45) + 1;
+        if (!recommendedNumbers.includes(num)) recommendedNumbers.push(num);}
+        result += "<p>🍀 " + set + "조 : " + recommendedNumbers.sort((a, b) => a - b).join(", ") + "</p>";
+}
+    document.getElementById("analysis").innerHTML = result;
+};
+let lottoHistory = [
+    [1, 7, 13, 21, 33, 45],
+    [3, 7, 15, 22, 33, 40],
+    [1, 9, 13, 25, 34, 45],
+    [5, 7, 18, 21, 33, 42],
+    [1, 11, 13, 22, 35, 45]
+];
+const lottoDataUrl = "https://raw.githubusercontent.com/youngeun9100/project-l-data/main/data/winning_numbers.json";
+fetch(lottoDataUrl)
+    .then(response => response.json())
+    .then(data => {
+        console.log("받아온 로또 데이터:", data);
+    console.log("첫 번째 회차 자료:", data.draws[0]);
+    lottoHistory = data.draws.map(draw => draw.numbers);   
+    })
+    .catch(error => {
+        console.log("데이터 가져오기 오류:", error);
+    });
+</script>
+</body>
+</html>
+
+
